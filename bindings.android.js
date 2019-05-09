@@ -141,6 +141,7 @@ nobleBindings.read = function(deviceUuid, serviceUuid, characteristicUuid) {
 };
 
 nobleBindings.write = function(deviceUuid, serviceUuid, characteristicUuid, data, withoutResponse) {
+  console.log("WRITE: ", serviceUuid, characteristicUuid, data, withoutResponse);
   RNBLE.write(deviceUuid, toAppleUuid(serviceUuid), toAppleUuid(characteristicUuid), data.toString("base64"), withoutResponse);
 };
 

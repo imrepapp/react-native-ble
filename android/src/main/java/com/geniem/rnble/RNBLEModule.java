@@ -27,47 +27,16 @@ SOFTWARE.
 
 package com.geniem.rnble;
 
+import android.bluetooth.*;
+import android.bluetooth.le.*;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.BroadcastReceiver;
-import android.os.Handler;
-import android.util.Log;
-
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.ScanRecord;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
-
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.facebook.react.bridge.LifecycleEventListener;
-
 import android.os.ParcelUuid;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.UUID;
 import android.util.Base64;
+import android.util.Log;
+import com.facebook.react.bridge.*;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+
+import java.util.*;
 
 class RNBLEModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String TAG = "RNBLEModule";
@@ -96,6 +65,7 @@ class RNBLEModule extends ReactContextBaseJavaModule implements LifecycleEventLi
         reactContext.addLifecycleEventListener(this);
     }
 
+
     @Override
     public void initialize() {
         super.initialize();
@@ -104,27 +74,7 @@ class RNBLEModule extends ReactContextBaseJavaModule implements LifecycleEventLi
         if(bluetoothAdapter != null){
             bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
-
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        context.registerReceiver(bleStateReceiver, filter);
     }
-
-    private final BroadcastReceiver bleStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-                if (state == BluetoothAdapter.STATE_OFF || state == BluetoothAdapter.STATE_ON) {
-                    WritableMap params = Arguments.createMap();
-                    params.putString("state",stateToString(bluetoothAdapter.getState()));
-                    sendEvent("ble.stateChange", params);
-                }
-            }
-        }
-    };
 
     /**
      * @return the name of this module. This will be the name used to {@code require()} this module
@@ -298,7 +248,9 @@ class RNBLEModule extends ReactContextBaseJavaModule implements LifecycleEventLi
                                 break;                                
                             }
                         }
-                    }                    
+                    }
+                } else {
+                    filteredCharacteristics = characteristics;
                 }
 
                 //process characteristics 
@@ -669,8 +621,8 @@ class RNBLEModule extends ReactContextBaseJavaModule implements LifecycleEventLi
 
 
      private String toNobleUuid(String uuid) {
-        String result = uuid.replaceAll("[\\s\\-()]", "");
-        return result.toLowerCase();
+        String result = uuid.replaceAll("[\\s\\-()]", "").toLowerCase();
+        return result;
      }
 
     //RnbleScanCallback scan callback
